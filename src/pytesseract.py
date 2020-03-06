@@ -257,12 +257,28 @@ def run_and_get_output(
             'timeout': timeout,
         }
 
+
         run_tesseract(**kwargs)
-        filename = kwargs['output_filename_base'] + extsep + extension
-        with open(filename, 'rb') as output_file:
-            if return_bytes:
-                return output_file.read()
-            return output_file.read().decode('utf-8').strip()
+
+        # This is a really dirty solution, and possibly breaks a lot, but I do need 
+        # Alto output. As far as I see, the problem here is that the flag for Alto is
+        # 'alto' but the output file has the extension .xml
+
+        if extension == 'alto':
+
+            filename = kwargs['output_filename_base'] + extsep + 'xml'
+            with open(filename, 'rb') as output_file:
+                if return_bytes:
+                    return output_file.read()
+                return output_file.read().decode('utf-8').strip()
+
+        else:
+
+            filename = kwargs['output_filename_base'] + extsep + extension
+            with open(filename, 'rb') as output_file:
+                if return_bytes:
+                    return output_file.read()
+                return output_file.read().decode('utf-8').strip()
 
 
 def file_to_dict(tsv, cell_delimiter, str_col_idx):
@@ -357,7 +373,7 @@ def image_to_pdf_or_hocr(
     Returns the result of a Tesseract OCR run on the provided image to pdf/hocr
     """
 
-    if extension not in {'pdf', 'hocr'}:
+    if extension not in {'pdf', 'hocr', 'alto', 'xml'}:
         raise ValueError('Unsupported extension: {}'.format(extension))
     args = [image, extension, lang, config, nice, timeout, True]
 
